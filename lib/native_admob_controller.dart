@@ -22,7 +22,6 @@ class NativeAdmobController {
 
   NativeAdmobController() {
     stateChanged.listen((event) {
-      if (currentState == AdLoadState.loadCompleted) return;
       currentState = event;
     });
     _channel = MethodChannel(id);
@@ -58,6 +57,7 @@ class NativeAdmobController {
 
   /// Change the ad unit ID
   void setAdUnitID(String adUnitID, {int numberAds = 1}) {
+    if (_adUnitID == adUnitID) return;
     _adUnitID = adUnitID;
     _channel.invokeMethod("setAdUnitID", {
       "adUnitID": adUnitID,
@@ -110,7 +110,6 @@ class BannerAdmobController {
 
   BannerAdmobController() {
     stateChanged.listen((event) {
-      if (currentState == AdLoadState.loadCompleted) return;
       currentState = event;
     });
     _channel = MethodChannel(id);
@@ -146,6 +145,7 @@ class BannerAdmobController {
 
   /// Change the ad unit ID
   void setAdUnitID(String adUnitID) {
+    if (_adUnitID == adUnitID) return;
     _adUnitID = adUnitID;
     _channel.invokeMethod("setAdUnitID", {
       "adUnitID": adUnitID,
