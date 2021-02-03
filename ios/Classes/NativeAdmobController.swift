@@ -57,9 +57,9 @@ class NativeAdmobController: NSObject {
                     multipleAdsOptions.numberOfAds = numberAds
                 }
                 adLoader = GADAdLoader(
-                    adUnitID: adUnitID, 
-                    rootViewController: nil, 
-                    adTypes: [.unifiedNative], 
+                    adUnitID: adUnitID,
+                    rootViewController: nil,
+                    adTypes: [.unifiedNative],
                     options: [multipleAdsOptions]
                 )
                 adLoader?.delegate = self
@@ -105,6 +105,65 @@ class NativeAdmobController: NSObject {
     }
 }
 
+class BannerAdmobController: NSObject, GADBannerViewDelegate {
+    
+    enum CallMethod: String {
+        case setAdUnitID
+    }
+    
+    enum LoadState: String {
+        case loading, loadError, loadCompleted
+    }
+    
+    let id: String
+    let channel: FlutterMethodChannel
+    
+    let bannerView: GADBannerView = GADBannerView(adSize: kGADAdSizeBanner)
+    private var adUnitID: String?
+    
+    init(id: String, channel: FlutterMethodChannel) {
+        self.id = id
+        self.channel = channel
+        super.init()
+        
+        channel.setMethodCallHandler(handle)
+    }
+    
+    private func handle(_ call: FlutterMethodCall, result: @escaping FlutterResult) {
+        guard let callMethod = CallMethod(rawValue: call.method) else { return result(FlutterMethodNotImplemented) }
+        let params = call.arguments as? [String: Any]
+        
+        switch callMethod {
+        case .setAdUnitID:
+            guard let adUnitID = params?["adUnitID"] as? String else {
+                return result(nil)
+            }
+            let isChanged = adUnitID != self.adUnitID
+            self.adUnitID = adUnitID
+            if isChanged {
+                bannerView.adUnitID = adUnitID
+                bannerView.rootViewController = UIApplication.shared.delegate!.window!!.rootViewController
+                bannerView.delegate = self
+                channel.invokeMethod(LoadState.loading.rawValue, arguments: nil)
+                bannerView.load(GADRequest())
+            } else {
+                channel.invokeMethod(LoadState.loadCompleted.rawValue, arguments: nil)
+            }
+        }
+        
+        result(nil)
+    }
+    
+    func adViewDidReceiveAd(_ bannerView: GADBannerView) {
+        channel.invokeMethod(LoadState.loadCompleted.rawValue, arguments: nil)
+    }
+    
+    func adView(_ bannerView: GADBannerView, didFailToReceiveAdWithError error: GADRequestError) {
+        channel.invokeMethod(LoadState.loadError.rawValue, arguments: nil)
+    }
+}
+
+
 extension NativeAdmobController: GADUnifiedNativeAdLoaderDelegate {
     
     func adLoader(_ adLoader: GADAdLoader, didFailToReceiveAdWithError error: GADRequestError) {
@@ -122,7 +181,8 @@ class NativeAdmobControllerManager {
     static let shared = NativeAdmobControllerManager()
     
     private var controllers: [NativeAdmobController] = []
-    
+    private var bannerControllers: [BannerAdmobController] = []
+
     private init() {}
     
     func createController(forID id: String, binaryMessenger: FlutterBinaryMessenger) {
@@ -134,6 +194,33 @@ class NativeAdmobControllerManager {
     }
     
     func getController(forID id: String) -> NativeAdmobController? {
+        return controllers.first(where: { $0.id == id })
+    }
+    
+    func removeController(forID id: String) {
+        if let index = controllers.firstIndex(where: { $0.id == id }) {
+            controllers.remove(at: index)
+        }
+    }
+}
+
+class BannerAdmobControllerManager {
+    
+    static let shared = BannerAdmobControllerManager()
+    
+    private var controllers: [BannerAdmobController] = []
+
+    private init() {}
+    
+    func createController(forID id: String, binaryMessenger: FlutterBinaryMessenger) {
+        if getController(forID: id) == nil {
+            let methodChannel = FlutterMethodChannel(name: id, binaryMessenger: binaryMessenger)
+            let controller = BannerAdmobController(id: id, channel: methodChannel)
+            controllers.append(controller)
+        }
+    }
+    
+    func getController(forID id: String) -> BannerAdmobController? {
         return controllers.first(where: { $0.id == id })
     }
     

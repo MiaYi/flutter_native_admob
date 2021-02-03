@@ -4,9 +4,7 @@ import android.content.Context
 import android.os.Bundle
 import android.util.Log
 import com.google.ads.mediation.admob.AdMobAdapter
-import com.google.android.gms.ads.AdListener
-import com.google.android.gms.ads.AdLoader
-import com.google.android.gms.ads.AdRequest
+import com.google.android.gms.ads.*
 import com.google.android.gms.ads.formats.UnifiedNativeAd
 import io.flutter.plugin.common.BinaryMessenger
 import io.flutter.plugin.common.MethodCall
@@ -105,6 +103,59 @@ class NativeAdmobController(
   }
 }
 
+class BannerAdmobController(
+        val id: String,
+        private val channel: MethodChannel,
+        private val context: Context
+) : MethodChannel.MethodCallHandler {
+
+  enum class CallMethod {
+    setAdUnitID
+  }
+
+  enum class LoadState {
+    loading, loadError, loadCompleted
+  }
+
+  var adView: AdView? = null
+  private var adUnitID: String? = null
+
+  init {
+    channel.setMethodCallHandler(this)
+  }
+
+  override fun onMethodCall(call: MethodCall, result: MethodChannel.Result) {
+    when (CallMethod.valueOf(call.method)) {
+      CallMethod.setAdUnitID -> {
+        call.argument<String>("adUnitID")?.let {
+          val isChanged = adUnitID != it
+          adUnitID = it
+
+          if (isChanged) {
+            adView?.adSize = AdSize.BANNER
+            adView?.adUnitId = adUnitID
+            val adRequest = AdRequest.Builder().build()
+
+            adView?.adListener = object: AdListener() {
+              override fun onAdLoaded() {
+                channel.invokeMethod(LoadState.loadCompleted.toString(), null)
+              }
+
+              override fun onAdFailedToLoad(p0: Int) {
+                channel.invokeMethod(LoadState.loadError.toString(), null)
+              }
+            }
+            channel.invokeMethod(LoadState.loading.toString(), null)
+            adView?.loadAd(adRequest)
+          }
+        } ?: result.success(null)
+      }
+
+    }
+  }
+}
+
+
 object NativeAdmobControllerManager {
   private val controllers: ArrayList<NativeAdmobController> = arrayListOf()
 
@@ -117,6 +168,27 @@ object NativeAdmobControllerManager {
   }
 
   fun getController(id: String): NativeAdmobController? {
+    return controllers.firstOrNull { it.id == id }
+  }
+
+  fun removeController(id: String) {
+    val index = controllers.indexOfFirst { it.id == id }
+    if (index >= 0) controllers.removeAt(index)
+  }
+}
+
+object BannerAdmobControllerManager {
+  private val controllers: ArrayList<BannerAdmobController> = arrayListOf()
+
+  fun createController(id: String, binaryMessenger: BinaryMessenger, context: Context) {
+    if (getController(id) == null) {
+      val methodChannel = MethodChannel(binaryMessenger, id)
+      val controller = BannerAdmobController(id, methodChannel, context)
+      controllers.add(controller)
+    }
+  }
+
+  fun getController(id: String): BannerAdmobController? {
     return controllers.firstOrNull { it.id == id }
   }
 

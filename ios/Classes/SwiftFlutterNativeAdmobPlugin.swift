@@ -4,13 +4,18 @@ import GoogleMobileAds
 import PureLayout
 
 let viewType = "native_admob"
+let bannerViewType = "banner_admob"
+
 let controllerManager = NativeAdmobControllerManager.shared
+let bannerControllerManager = BannerAdmobControllerManager.shared
 
 public class SwiftFlutterNativeAdmobPlugin: NSObject, FlutterPlugin {
     
     enum CallMethod: String {
         case initController
         case disposeController
+        case initBannerController
+        case disposeBannerController
         case setTestDeviceIds
     }
     
@@ -26,6 +31,9 @@ public class SwiftFlutterNativeAdmobPlugin: NSObject, FlutterPlugin {
         
         let viewFactory = PlatformViewFactory()
         registrar.register(viewFactory, withId: viewType)
+        
+        let bannerViewFactory = BannerPlatformViewFactory()
+        registrar.register(bannerViewFactory, withId: bannerViewType)
     }
     
     init(messenger: FlutterBinaryMessenger) {
@@ -50,6 +58,14 @@ public class SwiftFlutterNativeAdmobPlugin: NSObject, FlutterPlugin {
         case .setTestDeviceIds:
             if let testDeviceIds = params?["testDeviceIds"] as? [String] {
                 GADMobileAds.sharedInstance().requestConfiguration.testDeviceIdentifiers = testDeviceIds
+            }
+        case .initBannerController:
+            if let controllerID = params?["controllerID"] as? String {
+                bannerControllerManager.createController(forID: controllerID, binaryMessenger: messenger)
+            }
+        case .disposeBannerController:
+            if let controllerID = params?["controllerID"] as? String {
+                bannerControllerManager.removeController(forID: controllerID)
             }
         }
         
@@ -107,5 +123,36 @@ class PlatformView: NSObject, FlutterPlatformView {
     
     func view() -> UIView {
         return nativeAdView
+    }
+}
+
+class BannerPlatformViewFactory: NSObject, FlutterPlatformViewFactory {
+    
+    func create(withFrame frame: CGRect, viewIdentifier viewId: Int64, arguments args: Any?) -> FlutterPlatformView {
+        return BannerPlatformView(frame, viewId: viewId, args: args)
+    }
+    
+    func createArgsCodec() -> FlutterMessageCodec & NSObjectProtocol {
+        return FlutterStandardMessageCodec.sharedInstance()
+    }
+}
+
+class BannerPlatformView: NSObject, FlutterPlatformView {
+    
+    private var controller: BannerAdmobController!
+
+    init(_ frame: CGRect, viewId: Int64, args: Any?) {
+        let params = args as? [String: Any] ?? [:]
+        
+        if let controllerID = params["controllerID"] as? String,
+            let controller = bannerControllerManager.getController(forID: controllerID) {
+            self.controller = controller
+        }
+        
+        super.init()
+    }
+    
+    func view() -> UIView {
+        return controller.bannerView
     }
 }

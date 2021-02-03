@@ -1,6 +1,6 @@
 import 'dart:async';
 
-import 'package:flutter/material.dart';
+import 'package:flutter/material.dart' hide String;
 import 'package:flutter/services.dart';
 
 enum AdLoadState { loading, loadError, loadCompleted }
@@ -76,6 +76,69 @@ class NativeAdmobController {
     _channel.invokeMethod("reloadAd", {
       "forceRefresh": forceRefresh,
       "numberAds": numberAds,
+    });
+  }
+
+  void setTestDeviceIds(List<String> ids) {
+    if (ids == null || ids.isEmpty) return;
+
+    _pluginChannel.invokeMethod("setTestDeviceIds", {
+      "testDeviceIds": ids,
+    });
+  }
+}
+
+class BannerAdmobController {
+  final _key = UniqueKey();
+  String get id => _key.toString();
+
+  final _stateChanged = StreamController<AdLoadState>.broadcast();
+  Stream<AdLoadState> get stateChanged => _stateChanged.stream;
+
+  /// Channel to communicate with plugin
+  final _pluginChannel = const MethodChannel("flutter_native_admob");
+
+  /// Channel to communicate with controller
+  MethodChannel _channel;
+  String _adUnitID;
+
+  BannerAdmobController() {
+    _channel = MethodChannel(id);
+    _channel.setMethodCallHandler(_handleMessages);
+
+    // Let the plugin know there is a new controller
+    _pluginChannel.invokeMethod("initBannerController", {
+      "controllerID": id,
+    });
+  }
+
+  void dispose() {
+    _pluginChannel.invokeMethod("disposeBannerController", {
+      "controllerID": id,
+    });
+  }
+
+  Future<Null> _handleMessages(MethodCall call) async {
+    switch (call.method) {
+      case "loading":
+        _stateChanged.add(AdLoadState.loading);
+        break;
+
+      case "loadError":
+        _stateChanged.add(AdLoadState.loadError);
+        break;
+
+      case "loadCompleted":
+        _stateChanged.add(AdLoadState.loadCompleted);
+        break;
+    }
+  }
+
+  /// Change the ad unit ID
+  void setAdUnitID(String adUnitID) {
+    _adUnitID = adUnitID;
+    _channel.invokeMethod("setAdUnitID", {
+      "adUnitID": adUnitID,
     });
   }
 

@@ -5,8 +5,7 @@ import android.content.res.Resources
 import android.graphics.drawable.Drawable
 import android.graphics.drawable.GradientDrawable
 import android.view.View
-import com.google.android.gms.ads.MobileAds
-import com.google.android.gms.ads.RequestConfiguration
+import com.google.android.gms.ads.*
 import io.flutter.plugin.common.BinaryMessenger
 import io.flutter.plugin.common.MethodCall
 import io.flutter.plugin.common.MethodChannel
@@ -24,12 +23,13 @@ class FlutterNativeAdmobPlugin(
 ) : MethodCallHandler {
 
   enum class CallMethod {
-    initController, disposeController, setTestDeviceIds
+    initController, disposeController, setTestDeviceIds, initBannerController, disposeBannerController
   }
 
   companion object {
 
     const val viewType = "native_admob"
+    const val bannerViewType = "banner_admob"
 
     @JvmStatic
     fun registerWith(registrar: Registrar) {
@@ -43,6 +43,9 @@ class FlutterNativeAdmobPlugin(
       registrar
           .platformViewRegistry()
           .registerViewFactory(viewType, ViewFactory())
+      registrar
+          .platformViewRegistry()
+          .registerViewFactory(bannerViewType, BannerViewFactory())
     }
   }
 
@@ -64,6 +67,18 @@ class FlutterNativeAdmobPlugin(
         (call.argument<List<String>>("testDeviceIds"))?.let {
           val configuration = RequestConfiguration.Builder().setTestDeviceIds(it).build()
           MobileAds.setRequestConfiguration(configuration)
+        }
+      }
+
+      CallMethod.initBannerController -> {
+        (call.argument<String>("controllerID"))?.let {
+          BannerAdmobControllerManager.createController(it, messenger, context)
+        }
+      }
+
+      CallMethod.disposeBannerController -> {
+        (call.argument<String>("controllerID"))?.let {
+          BannerAdmobControllerManager.removeController(it)
         }
       }
     }
@@ -114,6 +129,42 @@ class NativePlatformView(
   override fun getView(): View = view
 
   override fun dispose() {}
+}
+
+
+class BannerViewFactory : PlatformViewFactory(StandardMessageCodec.INSTANCE) {
+
+  override fun create(context: Context, id: Int, params: Any?): PlatformView {
+    return BannerPlatformView(context, id, params)
+  }
+}
+
+class BannerPlatformView(
+        context: Context,
+        id: Int,
+        params: Any?
+) : PlatformView {
+
+  private var controller: BannerAdmobController? = null
+  private val adView: AdView
+
+  init {
+    val map = params as HashMap<*, *>
+
+    adView = AdView(context)
+
+    (map["controllerID"] as? String)?.let { id ->
+      val controller = BannerAdmobControllerManager.getController(id)
+      controller?.adView = adView
+      this.controller = controller
+    }
+  }
+
+  override fun getView(): View = adView
+
+  override fun dispose() {
+    this.controller?.adView?.destroy()
+  }
 }
 
 fun Int.toRoundedColor(radius: Float): Drawable {
