@@ -22,10 +22,8 @@ class NativeAdmobController: NSObject {
     let id: String
     let channel: FlutterMethodChannel
     
-    var nativeAdChanged: ((GADUnifiedNativeAd?) -> Void)?
-    var nativeAd: GADUnifiedNativeAd? {
-        didSet { invokeLoadCompleted() }
-    }
+    var nativeAdChanged: ((GADNativeAd?) -> Void)?
+    var nativeAd: GADNativeAd?
     
     private var adLoader: GADAdLoader?
     private var adUnitID: String?
@@ -59,7 +57,7 @@ class NativeAdmobController: NSObject {
                 adLoader = GADAdLoader(
                     adUnitID: adUnitID,
                     rootViewController: nil,
-                    adTypes: [.unifiedNative],
+                    adTypes: [.native],
                     options: [multipleAdsOptions]
                 )
                 adLoader?.delegate = self
@@ -103,6 +101,19 @@ class NativeAdmobController: NSObject {
         nativeAdChanged?(nativeAd)
         channel.invokeMethod(LoadState.loadCompleted.rawValue, arguments: nil)
     }
+}
+
+extension NativeAdmobController: GADAdLoaderDelegate {
+    
+    func adLoader(_ adLoader: GADAdLoader, didFailToReceiveAdWithError error: Error) {
+        print("NativeAdmob: failed to load with error: \(error.localizedDescription)")
+        channel.invokeMethod(LoadState.loadError.rawValue, arguments: nil)
+    }
+    
+    func adLoaderDidFinishLoading(_ adLoader: GADAdLoader) {
+        invokeLoadCompleted()
+    }
+    
 }
 
 class BannerAdmobController: NSObject, GADBannerViewDelegate {
@@ -154,25 +165,12 @@ class BannerAdmobController: NSObject, GADBannerViewDelegate {
         result(nil)
     }
     
-    func adViewDidReceiveAd(_ bannerView: GADBannerView) {
+    func bannerViewDidReceiveAd(_ bannerView: GADBannerView) {
         channel.invokeMethod(LoadState.loadCompleted.rawValue, arguments: nil)
     }
     
-    func adView(_ bannerView: GADBannerView, didFailToReceiveAdWithError error: GADRequestError) {
+    func bannerView(_ bannerView: GADBannerView, didFailToReceiveAdWithError error: Error) {
         channel.invokeMethod(LoadState.loadError.rawValue, arguments: nil)
-    }
-}
-
-
-extension NativeAdmobController: GADUnifiedNativeAdLoaderDelegate {
-    
-    func adLoader(_ adLoader: GADAdLoader, didFailToReceiveAdWithError error: GADRequestError) {
-        print("NativeAdmob: failed to load with error: \(error.localizedDescription)")
-        channel.invokeMethod(LoadState.loadError.rawValue, arguments: nil)
-    }
-    
-    func adLoader(_ adLoader: GADAdLoader, didReceive nativeAd: GADUnifiedNativeAd) {
-        self.nativeAd = nativeAd
     }
 }
 
