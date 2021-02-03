@@ -2,6 +2,7 @@ import 'dart:async';
 
 import 'package:flutter/material.dart' hide String;
 import 'package:flutter/services.dart';
+import 'package:rxdart/subjects.dart';
 
 enum AdLoadState { loading, loadError, loadCompleted }
 
@@ -9,9 +10,10 @@ class NativeAdmobController {
   final _key = UniqueKey();
   String get id => _key.toString();
 
-  final _stateChanged = StreamController<AdLoadState>.broadcast();
+  final _stateChanged =
+      BehaviorSubject<AdLoadState>.seeded(AdLoadState.loading);
   Stream<AdLoadState> get stateChanged => _stateChanged.stream;
-  AdLoadState currentState = AdLoadState.loading;
+  AdLoadState get currentState => _stateChanged.value;
 
   /// Channel to communicate with plugin
   final _pluginChannel = const MethodChannel("flutter_native_admob");
@@ -21,9 +23,6 @@ class NativeAdmobController {
   String _adUnitID;
 
   NativeAdmobController() {
-    stateChanged.listen((event) {
-      currentState = event;
-    });
     _channel = MethodChannel(id);
     _channel.setMethodCallHandler(_handleMessages);
 
@@ -37,6 +36,7 @@ class NativeAdmobController {
     _pluginChannel.invokeMethod("disposeController", {
       "controllerID": id,
     });
+    _stateChanged.close();
   }
 
   Future<Null> _handleMessages(MethodCall call) async {
@@ -97,9 +97,10 @@ class BannerAdmobController {
   final _key = UniqueKey();
   String get id => _key.toString();
 
-  final _stateChanged = StreamController<AdLoadState>.broadcast();
+  final _stateChanged =
+      BehaviorSubject<AdLoadState>.seeded(AdLoadState.loading);
   Stream<AdLoadState> get stateChanged => _stateChanged.stream;
-  AdLoadState currentState = AdLoadState.loading;
+  AdLoadState get currentState => _stateChanged.value;
 
   /// Channel to communicate with plugin
   final _pluginChannel = const MethodChannel("flutter_native_admob");
@@ -109,9 +110,6 @@ class BannerAdmobController {
   String _adUnitID;
 
   BannerAdmobController() {
-    stateChanged.listen((event) {
-      currentState = event;
-    });
     _channel = MethodChannel(id);
     _channel.setMethodCallHandler(_handleMessages);
 
@@ -125,6 +123,7 @@ class BannerAdmobController {
     _pluginChannel.invokeMethod("disposeBannerController", {
       "controllerID": id,
     });
+    _stateChanged.close();
   }
 
   Future<Null> _handleMessages(MethodCall call) async {
