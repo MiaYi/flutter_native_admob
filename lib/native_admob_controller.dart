@@ -11,6 +11,7 @@ class NativeAdmobController {
 
   final _stateChanged = StreamController<AdLoadState>.broadcast();
   Stream<AdLoadState> get stateChanged => _stateChanged.stream;
+  AdLoadState currentState = AdLoadState.loading;
 
   /// Channel to communicate with plugin
   final _pluginChannel = const MethodChannel("flutter_native_admob");
@@ -20,6 +21,9 @@ class NativeAdmobController {
   String _adUnitID;
 
   NativeAdmobController() {
+    stateChanged.listen((event) {
+      currentState = event;
+    });
     _channel = MethodChannel(id);
     _channel.setMethodCallHandler(_handleMessages);
 
@@ -94,6 +98,7 @@ class BannerAdmobController {
 
   final _stateChanged = StreamController<AdLoadState>.broadcast();
   Stream<AdLoadState> get stateChanged => _stateChanged.stream;
+  AdLoadState currentState = AdLoadState.loading;
 
   /// Channel to communicate with plugin
   final _pluginChannel = const MethodChannel("flutter_native_admob");
@@ -103,6 +108,9 @@ class BannerAdmobController {
   String _adUnitID;
 
   BannerAdmobController() {
+    stateChanged.listen((event) {
+      currentState = event;
+    });
     _channel = MethodChannel(id);
     _channel.setMethodCallHandler(_handleMessages);
 
