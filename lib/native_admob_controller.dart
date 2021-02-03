@@ -22,6 +22,7 @@ class NativeAdmobController {
 
   NativeAdmobController() {
     stateChanged.listen((event) {
+      if (currentState == AdLoadState.loadCompleted) return;
       currentState = event;
     });
     _channel = MethodChannel(id);
@@ -109,6 +110,7 @@ class BannerAdmobController {
 
   BannerAdmobController() {
     stateChanged.listen((event) {
+      if (currentState == AdLoadState.loadCompleted) return;
       currentState = event;
     });
     _channel = MethodChannel(id);
