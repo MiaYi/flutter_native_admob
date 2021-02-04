@@ -4,6 +4,7 @@ import android.content.Context
 import android.content.res.Resources
 import android.graphics.drawable.Drawable
 import android.graphics.drawable.GradientDrawable
+import android.util.Log
 import android.view.View
 import com.google.android.gms.ads.*
 import io.flutter.plugin.common.BinaryMessenger
@@ -135,32 +136,29 @@ class NativePlatformView(
 class BannerViewFactory : PlatformViewFactory(StandardMessageCodec.INSTANCE) {
 
   override fun create(context: Context, id: Int, params: Any?): PlatformView {
+    Log.d("BannerViewFactory", "create")
     return BannerPlatformView(context, id, params)
   }
 }
 
 class BannerPlatformView(
-        context: Context,
+        private val context: Context,
         id: Int,
         params: Any?
 ) : PlatformView {
 
   private var controller: BannerAdmobController? = null
-  private val adView: AdView
 
   init {
     val map = params as HashMap<*, *>
 
-    adView = AdView(context)
-
     (map["controllerID"] as? String)?.let { id ->
       val controller = BannerAdmobControllerManager.getController(id)
-      controller?.adView = adView
       this.controller = controller
     }
   }
 
-  override fun getView(): View = adView
+  override fun getView(): View = controller?.adView ?: View(context)
 
   override fun dispose() {
     this.controller?.adView?.destroy()

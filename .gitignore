@@ -7,3 +7,7 @@ pubspec.lock
 
 build/
 .idea
+.fvm/flutter_sdk
+.fvm/fvm_config.json
+example/.fvm/flutter_sdk
+example/.fvm/fvm_config.json

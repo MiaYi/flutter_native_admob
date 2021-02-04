@@ -117,7 +117,7 @@ class BannerAdmobController(
     loading, loadError, loadCompleted
   }
 
-  var adView: AdView? = null
+  var adView: AdView = AdView(context)
   private var adUnitID: String? = null
 
   init {
@@ -132,11 +132,11 @@ class BannerAdmobController(
           adUnitID = it
 
           if (isChanged) {
-            adView?.adSize = AdSize.BANNER
-            adView?.adUnitId = adUnitID
+            adView.adSize = AdSize.BANNER
+            adView.adUnitId = adUnitID
             val adRequest = AdRequest.Builder().build()
 
-            adView?.adListener = object: AdListener() {
+            adView.adListener = object: AdListener() {
               override fun onAdLoaded() {
                 channel.invokeMethod(LoadState.loadCompleted.toString(), null)
               }
@@ -146,7 +146,7 @@ class BannerAdmobController(
               }
             }
             channel.invokeMethod(LoadState.loading.toString(), null)
-            adView?.loadAd(adRequest)
+            adView.loadAd(adRequest)
           }
         } ?: result.success(null)
       }
