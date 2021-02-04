@@ -23,90 +23,95 @@ class _MyAppState extends State<MyApp> {
         ),
         body: ListView(
           children: <Widget>[
-            Container(
-              margin: EdgeInsets.only(bottom: 20.0),
-              height: 200.0,
-              color: Colors.green,
-            ),
-            Container(
-              margin: EdgeInsets.only(bottom: 20.0),
-              height: 200.0,
-              color: Colors.green,
-            ),
-            Container(
-              margin: EdgeInsets.only(bottom: 20.0),
-              height: 200.0,
-              color: Colors.green,
-            ),
-            Container(
-              height: 90,
-              padding: EdgeInsets.all(10),
-              margin: EdgeInsets.only(bottom: 20.0),
-              child: NativeAdmob(
-                // Your ad unit id
-                adUnitID: _adUnitID,
-                numberAds: 3,
-                controller: _nativeAdController,
-                type: NativeAdmobType.banner,
+            AspectRatio(
+              aspectRatio: 320.0 / 50.0,
+              child: Container(
+                width: double.infinity,
+                color: Colors.green,
+                child: BannerAdmob(
+                  adUnitID: "ca-app-pub-3940256099942544/6300978111",
+                ),
               ),
             ),
-            Container(
-              margin: EdgeInsets.only(bottom: 20.0),
-              height: 200.0,
-              color: Colors.green,
-            ),
-            Container(
-              margin: EdgeInsets.only(bottom: 20.0),
-              height: 200.0,
-              color: Colors.green,
-            ),
-            Container(
-              margin: EdgeInsets.only(bottom: 20.0),
-              height: 200.0,
-              color: Colors.green,
-            ),
-            Container(
-              margin: EdgeInsets.only(bottom: 20.0),
-              height: 200.0,
-              color: Colors.green,
-            ),
-            Container(
-              margin: EdgeInsets.only(bottom: 20.0),
-              height: 200.0,
-              color: Colors.green,
-            ),
-            Container(
-              margin: EdgeInsets.only(bottom: 20.0),
-              height: 200.0,
-              color: Colors.green,
-            ),
-            Container(
-              margin: EdgeInsets.only(bottom: 20.0),
-              height: 200.0,
-              color: Colors.green,
-            ),
-            Container(
-              margin: EdgeInsets.only(bottom: 20.0),
-              height: 200.0,
-              color: Colors.green,
-            ),
-            Container(
-              height: 330,
-              padding: EdgeInsets.all(10),
-              margin: EdgeInsets.only(bottom: 20.0),
-              child: NativeAdmob(
-                // Your ad unit id
-                adUnitID: _adUnitID,
-                numberAds: 3,
-                controller: _nativeAdController,
-                type: NativeAdmobType.full,
-              ),
-            ),
-            Container(
-              margin: EdgeInsets.only(bottom: 20.0),
-              height: 200.0,
-              color: Colors.blue,
-            ),
+            // Container(
+            //   margin: EdgeInsets.only(bottom: 20.0),
+            //   height: 200.0,
+            //   color: Colors.green,
+            // ),
+            // Container(
+            //   margin: EdgeInsets.only(bottom: 20.0),
+            //   height: 200.0,
+            //   color: Colors.green,
+            // ),
+            // Container(
+            //   height: 90,
+            //   padding: EdgeInsets.all(10),
+            //   margin: EdgeInsets.only(bottom: 20.0),
+            //   child: NativeAdmob(
+            //     // Your ad unit id
+            //     adUnitID: _adUnitID,
+            //     numberAds: 3,
+            //     controller: _nativeAdController,
+            //     type: NativeAdmobType.banner,
+            //   ),
+            // ),
+            // Container(
+            //   margin: EdgeInsets.only(bottom: 20.0),
+            //   height: 200.0,
+            //   color: Colors.green,
+            // ),
+            // Container(
+            //   margin: EdgeInsets.only(bottom: 20.0),
+            //   height: 200.0,
+            //   color: Colors.green,
+            // ),
+            // Container(
+            //   margin: EdgeInsets.only(bottom: 20.0),
+            //   height: 200.0,
+            //   color: Colors.green,
+            // ),
+            // Container(
+            //   margin: EdgeInsets.only(bottom: 20.0),
+            //   height: 200.0,
+            //   color: Colors.green,
+            // ),
+            // Container(
+            //   margin: EdgeInsets.only(bottom: 20.0),
+            //   height: 200.0,
+            //   color: Colors.green,
+            // ),
+            // Container(
+            //   margin: EdgeInsets.only(bottom: 20.0),
+            //   height: 200.0,
+            //   color: Colors.green,
+            // ),
+            // Container(
+            //   margin: EdgeInsets.only(bottom: 20.0),
+            //   height: 200.0,
+            //   color: Colors.green,
+            // ),
+            // Container(
+            //   margin: EdgeInsets.only(bottom: 20.0),
+            //   height: 200.0,
+            //   color: Colors.green,
+            // ),
+            // Container(
+            //   height: 330,
+            //   padding: EdgeInsets.all(10),
+            //   margin: EdgeInsets.only(bottom: 20.0),
+            //   child: NativeAdmob(
+            //     // Your ad unit id
+            //     adUnitID: _adUnitID,
+            //     numberAds: 3,
+            //     controller: _nativeAdController,
+            //     type: NativeAdmobType.full,
+            //   ),
+            // ),
+            // Container(
+            //   margin: EdgeInsets.only(bottom: 20.0),
+            //   height: 200.0,
+            //   color: Colors.blue,
+            // ),
           ],
         ),
         floatingActionButton: FloatingActionButton.extended(
